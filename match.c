@@ -1,8 +1,12 @@
 #include "match.h"
 
-#include <stdbool.h>
 #include <string.h>
 
+// term:
+// 	 '*'         matches any sequence of non-Separator characters
+// 	 '?'         matches any single non-Separator character
+// 	 c           matches character c (c != '*', '?')
+// 	'\\' c       matches character c
 bool match(const char* pat, long plen, const char* str, long slen) {
   if (plen < 0) plen = strlen(pat);
   if (slen < 0) slen = strlen(str);
@@ -32,5 +36,5 @@ bool match(const char* pat, long plen, const char* str, long slen) {
     str++;
     slen--;
   }
-  return plen == 0 && slen == 0;
+  return slen == 0 && plen == 0;
 }

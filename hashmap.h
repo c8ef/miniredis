@@ -4,23 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// ref: https://programming.guide/robin-hood-hashing.html
-struct hashmap {
-  bool oom;
-  size_t elsize;
-  size_t cap;
-  uint64_t (*hash)(const void* item);
-  int (*compare)(const void* a, const void* b);
-  size_t bucketsz;
-  size_t nbuckets;
-  size_t count;
-  size_t mask;
-  size_t growat;
-  size_t shrinkat;
-  void* buckets;
-  void* spare;
-  void* edata;
-};
+struct hashmap;
 
 struct hashmap* hashmap_new(size_t elsize, size_t cap,
                             uint64_t (*hash)(const void* item),
