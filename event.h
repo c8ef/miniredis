@@ -19,11 +19,8 @@ struct event_conn;
 
 struct event_events {
   int64_t (*tick)(void* udata);
-  bool (*sync)(void* udata);
   void (*data)(struct event_conn* conn, const void* data, size_t len,
                void* udata);
-  void (*opened)(struct event_conn* conn, void* udata);
-  void (*closed)(struct event_conn* conn, void* udata);
   void (*serving)(const char** addrs, int naddrs, void* udata);
   void (*error)(const char* message, bool fatal, void* udata);
 };

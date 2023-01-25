@@ -200,9 +200,7 @@ static void net_accept(struct event* event, int qfd, int sfd) {
   } else if (hashmap_oom(event->conns)) {
     goto fail;
   }
-  if (event->events.opened) {
-    event->events.opened(conn, event->udata);
-  }
+
   return;
 fail:
   if (cfd != -1) close(cfd);
@@ -341,9 +339,6 @@ static struct addr* addr_listen(struct event* event, const char* str) {
 }
 
 static void close_remove_conn(struct event_conn* conn, struct event* event) {
-  if (event->events.closed) {
-    event->events.closed(conn, event->udata);
-  }
   buf_clear(&conn->wbuf);
   close(conn->fd);
   hashmap_delete(event->conns, &conn);
@@ -535,17 +530,7 @@ static void* thread(void* thdata) {
       event->faulty = false;
       continue;
     }
-    if (!synced) {
-      // sync before doing anything with connections.
-      if (event->events.sync) {
-        synced = event->events.sync(event->udata);
-        if (!synced) {
-          continue;
-        }
-      } else {
-        synced = true;
-      }
-    }
+
     for (int i = 0; i < n; i++) {
       // not a connection, check if it's a server socket.
       int j = which_socketfd(fds[i], thctx->paddrs, thctx->naddrs);
@@ -577,12 +562,7 @@ static void* thread(void* thdata) {
         }
       }
     }
-    if (event->events.sync && n > 0) {
-      synced = event->events.sync(event->udata);
-      if (!synced) {
-        continue;
-      }
-    }
+
     for (int i = 0; i < n; i++) {
       if (which_socketfd(fds[i], thctx->paddrs, thctx->naddrs) != -1) {
         continue;
