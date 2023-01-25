@@ -305,6 +305,7 @@ static struct addr* addr_listen(struct event* event, const char* str) {
         -1) {
       emsg_continue("setsockopt(SO_REUSEADDR)");
     }
+    // non blocking io
     if (setnonblock(fd) == -1) {
       emsg_continue("setnonblock");
     }

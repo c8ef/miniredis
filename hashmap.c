@@ -64,7 +64,7 @@ static uint64_t get_hash(struct hashmap* map, const void* key) {
 struct hashmap* hashmap_new(size_t elsize, size_t cap,
                             uint64_t (*hash)(const void* item),
                             int (*compare)(const void* a, const void* b)) {
-  int ncap = 16;
+  size_t ncap = 16;
   if (cap < ncap) {
     cap = ncap;
   } else {

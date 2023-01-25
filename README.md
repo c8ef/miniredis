@@ -13,7 +13,7 @@ sudo apt install libxxhash-dev
 ### build
 
 ```bash
-gcc *.c -O3 -march=native -lxxhash -o server
+gcc *.c -O3 -march=native -lxxhash -Wall -Wextra -Wpedantic -std=gnu17 -o server
 ```
 
 ### usage

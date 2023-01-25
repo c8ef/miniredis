@@ -45,13 +45,13 @@ bool miniredis_args_eq(struct miniredis_args* args, int index,
   if (index >= miniredis_args_count(args)) {
     return false;
   }
-  int slen = strlen(str);
+  size_t slen = strlen(str);
   size_t arglen = 0;
   const char* arg = miniredis_args_at(args, index, &arglen);
   if (arglen != slen) {
     return false;
   }
-  for (int i = 0; i < slen; i++) {
+  for (size_t i = 0; i < slen; i++) {
     if (tolower(str[i]) != tolower(arg[i])) {
       return false;
     }
@@ -344,7 +344,7 @@ static void data(struct event_conn* econn, const void* edata, size_t elen,
   }
 
   while (len > 0 && !conn->closed) {
-    size_t n;
+    long n;
     if (data[0] != '*') {
       n = telnet_parse(data, len, conn, &conn->args);
     } else {
