@@ -59,8 +59,6 @@ static uint64_t get_hash(struct hashmap* map, const void* key) {
 // Param `compare` is a function that compares items in the tree. See the
 // qsort stdlib function for an example of how this function works.
 // The hashmap must be freed with hashmap_free().
-// Param `elfree` is a function that frees a specific item. This should be NULL
-// unless you're storing some kind of reference data in the hash.
 struct hashmap* hashmap_new(size_t elsize, size_t cap,
                             uint64_t (*hash)(const void* item),
                             int (*compare)(const void* a, const void* b)) {
@@ -142,10 +140,7 @@ static bool resize(struct hashmap* map, size_t new_cap) {
   return true;
 }
 
-// hashmap_set inserts or replaces an item in the hash map. If an item is
-// replaced then it is returned otherwise NULL is returned. This operation
-// may allocate memory. If the system is unable to allocate additional
-// memory then NULL is returned and hashmap_oom() returns true.
+// hashmap_set inserts or replaces an item in the hash map.
 void* hashmap_set(struct hashmap* map, const void* item) {
   if (!item) {
     panic("item is null");
@@ -249,9 +244,6 @@ void* hashmap_delete(struct hashmap* map, void* key) {
       }
       map->count--;
       if (map->nbuckets > map->cap && map->count <= map->shrinkat) {
-        // Ignore the return value. It's ok for the resize operation to
-        // fail to allocate enough memory because a shrink operation
-        // does not change the integrity of the data.
         resize(map, map->nbuckets / 2);
       }
       return map->spare;
@@ -264,16 +256,12 @@ void* hashmap_delete(struct hashmap* map, void* key) {
 size_t hashmap_count(struct hashmap* map) { return map->count; }
 
 // hashmap_free frees the hash map
-// Every item is called with the element-freeing function given in hashmap_new,
-// if present, to free any data referenced in the elements of the hashmap.
 void hashmap_free(struct hashmap* map) {
   if (!map) return;
   free(map->buckets);
   free(map);
 }
 
-// hashmap_oom returns true if the last hashmap_set() call failed due to the
-// system being out of memory.
 bool hashmap_oom(struct hashmap* map) { return map->oom; }
 
 // hashmap_scan iterates over all items in the hash map
