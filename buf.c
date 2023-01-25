@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-// buf_append appends data to buffer. To append a null-terminated c-string
-// specify -1 for the len.
+// buf_append appends data to buffer
+// To append a null-terminated c-string specify -1 for the len
 bool buf_append(struct buf* buf, const char* data, ssize_t len) {
   if (len < 0) {
     len = strlen(data);
@@ -31,8 +31,7 @@ bool buf_append(struct buf* buf, const char* data, ssize_t len) {
   return true;
 }
 
-// buf_append_byte appends a single byte to buffer.
-// Returns false if the
+// buf_append_byte appends a single byte to buffer
 bool buf_append_byte(struct buf* buf, char ch) {
   if (buf->len == buf->cap) {
     return buf_append(buf, &ch, 1);

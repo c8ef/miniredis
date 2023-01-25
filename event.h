@@ -28,7 +28,6 @@ struct event {
   struct event_events events;
   char errmsg[256];
   struct hashmap* conns;
-  struct event_conn* faulty;
   void* udata;
 };
 
@@ -37,13 +36,11 @@ struct event_conn {
   int fd;
   bool closed;
   bool woke;
-  bool faulty;
   struct buf wbuf;
   size_t wbuf_idx;
   void* udata;
   struct event* event;
   char* addr;
-  struct event_conn* next_faulty;
 };
 
 void event_conn_close(struct event_conn* conn);

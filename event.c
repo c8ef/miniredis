@@ -23,46 +23,40 @@
 
 #define panic(format, ...)                             \
   {                                                    \
-    fprintf(stderr, "panic: " format, ##__VA_ARGS__);  \
+    fprintf(stderr, "panic: " format, __VA_ARGS__);    \
     fprintf(stderr, " (%s:%d)\n", __FILE__, __LINE__); \
     exit(1);                                           \
   }
 
-#define eprintf(fatal, format, ...)                                        \
-  {                                                                        \
-    snprintf(event->errmsg, sizeof(event->errmsg), format, ##__VA_ARGS__); \
-    if (event->events.error) {                                             \
-      event->events.error(event->errmsg, fatal, event->udata);             \
-    } else if (fatal) {                                                    \
-      panic(format, ##__VA_ARGS__);                                        \
-    }                                                                      \
-    if (fatal) exit(1);                                                    \
+#define eprintf(fatal, format, ...)                                      \
+  {                                                                      \
+    snprintf(event->errmsg, sizeof(event->errmsg), format, __VA_ARGS__); \
+    if (event->events.error) {                                           \
+      event->events.error(event->errmsg, fatal, event->udata);           \
+    } else if (fatal) {                                                  \
+      panic(format, ##__VA_ARGS__);                                      \
+    }                                                                    \
+    if (fatal) exit(1);                                                  \
   }
 
 static bool wake(struct event_conn* conn);
 
-static void set_fault(struct event_conn* conn) {
-  conn->faulty = true;
-  conn->next_faulty = conn->event->faulty;
-  conn->event->faulty = conn;
-}
-
 void event_conn_write(struct event_conn* conn, const void* data, ssize_t len) {
-  if (conn->faulty || conn->closed) {
+  if (conn->closed) {
     return;
   }
   if (!buf_append(&conn->wbuf, data, len) || !wake(conn)) {
-    set_fault(conn);
+    return;
   }
 }
 
 void event_conn_close(struct event_conn* conn) {
-  if (conn->faulty || conn->closed) {
+  if (conn->closed) {
     return;
   }
   conn->closed = true;
   if (!wake(conn)) {
-    set_fault(conn);
+    return;
   }
 }
 
@@ -196,7 +190,7 @@ static void net_accept(struct event* event, int qfd, int sfd) {
   conn->qfd = qfd;
   conn->event = event;
   if (hashmap_set(event->conns, &conn)) {
-    panic("duplicate fd");
+    panic("duplicate fd %d", conn->fd);
   } else if (hashmap_oom(event->conns)) {
     goto fail;
   }
@@ -502,16 +496,6 @@ static void* thread(void* thdata) {
     int n = net_events(qfd, fds, sizeof(fds) / sizeof(int), delay);
     if (n == -1) {
       panic("net_events: %s", strerror(errno));
-    }
-
-    if (event->faulty) {
-      // close faulty connections
-      while (event->faulty) {
-        close_remove_conn(event->faulty, event);
-        event->faulty = event->faulty->next_faulty;
-      }
-      event->faulty = false;
-      continue;
     }
 
     for (int i = 0; i < n; i++) {
