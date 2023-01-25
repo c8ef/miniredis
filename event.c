@@ -6,8 +6,6 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-#include <pthread.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -630,11 +628,7 @@ void event_main(const char* addrs[], int naddrs, struct event_events events,
   thctx.paddrs = paddrs;
   thctx.naddrs = naddrs;
 
-  pthread_t th;
-  int res = pthread_create(&th, NULL, thread, &thctx);
-  if (res) {
-    eprintf(true, "pthread_create: %s", strerror(errno));
-  }
+  thread(&thctx);
 
   while (1) {
     sleep(10);
