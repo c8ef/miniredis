@@ -17,10 +17,10 @@ struct server {
 };
 
 struct pair {
-  int hasex : 1;
-  int onstack : 1;
-  int keylen : 29;
-  int vallen : 29;
+  bool hasex;
+  bool onstack;
+  int keylen;
+  int vallen;
 };
 
 struct pair* pair_new(const char* key, int keylen, const char* val, int vallen,
@@ -136,6 +136,7 @@ int64_t tick(void* udata) {
 }
 
 void serving(const char** addrs, int naddrs, void* udata) {
+  (void)udata;
   for (int i = 0; i < naddrs; i++) {
     printf("* Listening at %s\n", addrs[i]);
   }
@@ -143,6 +144,8 @@ void serving(const char** addrs, int naddrs, void* udata) {
 }
 
 void error(const char* msg, bool fatal, void* udata) {
+  (void)fatal;
+  (void)udata;
   fprintf(stderr, "- %s\n", msg);
 }
 
@@ -365,6 +368,7 @@ void cmdKEYS(struct miniredis_conn* conn, struct miniredis_args* args,
 // PING [message]
 void cmdPING(struct miniredis_conn* conn, struct miniredis_args* args,
              void* udata) {
+  (void)udata;
   if (miniredis_args_count(args) == 1) {
     miniredis_conn_write_string(conn, "PONG");
   } else if (miniredis_args_count(args) == 2) {
@@ -378,6 +382,7 @@ void cmdPING(struct miniredis_conn* conn, struct miniredis_args* args,
 
 bool flushiter(const void* item, void* udata) {
   free(*((struct pair**)item));
+  (void)udata;
   return true;
 }
 

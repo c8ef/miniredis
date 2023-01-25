@@ -172,7 +172,7 @@ void ipstr(const struct sockaddr* sa, char* s, size_t len) {
 
 const char* event_conn_addr(struct event_conn* conn) { return conn->addr; }
 
-static void net_accept(struct event* event, int qfd, int sfd, struct addr* a) {
+static void net_accept(struct event* event, int qfd, int sfd) {
   struct event_conn* conn = NULL;
   int cfd = -1;
   struct sockaddr_storage addr;
@@ -260,8 +260,8 @@ static struct addr* addr_listen(struct event* event, const char* str) {
   memcpy(addr->host, host, hlen);
   addr->host[hlen] = 0;
 
-  struct addrinfo hints = {}, *addrs;
-  char port_str[16] = {};
+  struct addrinfo hints = {0}, *addrs;
+  char port_str[16] = "";
 
   hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
@@ -553,7 +553,7 @@ static void* thread(void* thdata) {
       int j = which_socketfd(fds[i], thctx->paddrs, thctx->naddrs);
       if (j != -1) {
         // accept the incoming connection.
-        net_accept(event, qfd, fds[i], thctx->paddrs[j]);
+        net_accept(event, qfd, fds[i]);
         continue;
       }
       struct event_conn* conn = get_conn(event, fds[i]);
