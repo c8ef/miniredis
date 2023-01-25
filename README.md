@@ -50,7 +50,7 @@ GET: 1069976.50 requests per second, p50=0.583 msec
 ```bash
 $ redis-server --version
 Redis server v=7.0.7 sha=00000000:0 malloc=jemalloc-5.2.1 bits=64 build=60db4852972c3375
-miao@miao:~/i/miniredis$ redis-benchmark -q -t set,get,ping -r 1000000 -n 10000000 -p 6382 -P 16
+$ redis-benchmark -q -t set,get,ping -r 1000000 -n 10000000 -p 6382 -P 16
 PING_INLINE: 1397819.50 requests per second, p50=0.463 msec
 PING_MBULK: 1845699.50 requests per second, p50=0.327 msec
 SET: 632471.06 requests per second, p50=1.159 msec
