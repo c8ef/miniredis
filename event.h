@@ -18,7 +18,6 @@ struct addr {
 struct event_conn;
 
 struct event_events {
-  int64_t (*tick)(void* udata);
   void (*data)(struct event_conn* conn, const void* data, size_t len,
                void* udata);
   void (*serving)(const char** addrs, int naddrs, void* udata);

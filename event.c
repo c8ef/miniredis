@@ -491,36 +491,19 @@ static void* thread(void* thdata) {
       }
       event->events.serving((const char**)saddrs, naddrsfds, event->udata);
     }
-    if (event->events.tick) {
-      tick_delay = event->events.tick(event->udata);
-      if (tick_delay < 0) {
-        tick_delay = 0;
-      }
-    }
-  } else {
-    event->events.tick = NULL;
   }
 
   bool synced = false;
   char buffer[4096];
   int fds[128];
 
-  int64_t start = event_now();
   for (;;) {
     int64_t delay = synced ? tick_delay : 0;
     int n = net_events(qfd, fds, sizeof(fds) / sizeof(int), delay);
     if (n == -1) {
       panic("net_events: %s", strerror(errno));
     }
-    if (event->events.tick) {
-      int64_t now = event_now();
-      int64_t elapsed = now - start;
-      if (elapsed > tick_delay) {
-        start = now;
-        tick_delay = ((int64_t)event->events.tick(event->udata));
-        tick_delay = tick_delay < 0 ? 0 : tick_delay;
-      }
-    }
+
     if (event->faulty) {
       // close faulty connections
       while (event->faulty) {

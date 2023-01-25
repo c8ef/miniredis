@@ -93,15 +93,6 @@ const char* miniredis_conn_addr(struct miniredis_conn* conn) {
   return event_conn_addr(conn->econn);
 }
 
-static int64_t tick(void* udata) {
-  struct mainctx* ctx = udata;
-  if (ctx->events->tick) {
-    return ctx->events->tick(ctx->udata);
-  } else {
-    return 50e6;  // back off for 50 ms
-  }
-}
-
 static void serving(const char** addrs, int naddrs, void* udata) {
   struct mainctx* ctx = udata;
   if (ctx->events->serving) {
@@ -341,7 +332,6 @@ void miniredis_main(const char** addrs, int naddrs,
       .events = &events,
   };
   struct event_events eevents = {
-      .tick = events.tick ? tick : NULL,
       .data = data,
       .serving = events.serving ? serving : NULL,
       .error = events.error ? error : NULL,

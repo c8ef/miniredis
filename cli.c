@@ -111,30 +111,6 @@ int key_compare(const void* a, const void* b) {
   return cmp;
 }
 
-int64_t tick(void* udata) {
-  struct server* server = udata;
-  server->now = (double)miniredis_now() / 1e9;
-  int npairs = hashmap_count(server->pairs);
-  int count = 0;
-  int dels = 0;
-  while (npairs > 0 && count < 100) {
-    struct pair** pval = hashmap_probe(server->pairs, server->next_check++);
-    if (pval) {
-      if ((*pval)->hasex && pair_expire(*pval) < server->now) {
-        hashmap_delete(server->pairs, pval);
-        // BROADCAST "DEL key"
-        dels++;
-        npairs--;
-      }
-      count++;
-    }
-  }
-  if (dels > 25) {
-    return 0;
-  }
-  return 50e6;  // back off for 50 ms
-}
-
 void serving(const char** addrs, int naddrs, void* udata) {
   (void)udata;
   for (int i = 0; i < naddrs; i++) {
@@ -444,7 +420,6 @@ int main(int argc, char** argv) {
   struct server server = {0};
   server.pairs = hashmap_new(sizeof(struct pair*), 0, key_hash, key_compare);
   struct miniredis_events evs = {
-      .tick = tick,
       .serving = serving,
       .command = command,
       .error = error,
