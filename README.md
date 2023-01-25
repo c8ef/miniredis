@@ -46,12 +46,12 @@ PONG
 - miniredis
 
 ```bash
-$ redis-benchmark -q -t set,get,ping -r 1000000 -n 10000000 -p 6382 -P 16
+$ redis-benchmark -q -t set,get,ping -r 1000000 -n 10000000 -p 9002  -P 16
 WARNING: Could not fetch server CONFIG
-PING_INLINE: 1648804.62 requests per second, p50=0.247 msec
-PING_MBULK: 1600256.00 requests per second, p50=0.255 msec
-SET: 1144950.75 requests per second, p50=0.575 msec
-GET: 1069976.50 requests per second, p50=0.583 msec
+PING_INLINE: 1700969.50 requests per second, p50=0.239 msec                     
+PING_MBULK: 1617076.38 requests per second, p50=0.247 msec                     
+SET: 1133915.38 requests per second, p50=0.575 msec                     
+GET: 1251094.75 requests per second, p50=0.543 msec                     
 ```
 
 - redis 7.0.7

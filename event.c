@@ -444,10 +444,8 @@ struct event_conn* get_conn(struct event* event, int fd) {
 }
 
 struct thread_context {
-  pthread_mutex_t* mu;
   bool serving;
   int server_id;
-  //
   struct event_events events;
   void* udata;
   struct addr** paddrs;
@@ -482,7 +480,6 @@ static void* thread(void* thdata) {
   }
 
   int64_t tick_delay = -1;
-  pthread_mutex_lock(thctx->mu);
   thctx->server_id++;
 
   if (!thctx->serving) {
@@ -509,7 +506,6 @@ static void* thread(void* thdata) {
   } else {
     event->events.tick = NULL;
   }
-  pthread_mutex_unlock(thctx->mu);
 
   bool synced = false;
   char buffer[4096];
@@ -625,10 +621,8 @@ void event_main(const char* addrs[], int naddrs, struct event_events events,
   for (int i = 0; i < naddrs; i++) {
     paddrs[i] = addr_listen(event, addrs[i]);
   }
-  pthread_mutex_t mu = PTHREAD_MUTEX_INITIALIZER;
   struct thread_context thctx;
   memset(&thctx, 0, sizeof(struct thread_context));
-  thctx.mu = &mu;
   thctx.serving = false;
   thctx.events = events;
   thctx.udata = udata;
