@@ -137,6 +137,8 @@ int setkeepalive(int fd) {
   return 0;
 }
 
+// ban nagle
+// can send the next packet only after receive the last ack
 int settcpnodelay(int fd) {
   return setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &(int){1}, sizeof(int));
 }
@@ -298,6 +300,7 @@ static struct addr* addr_listen(struct event* event, const char* str) {
     if (fd == -1) {
       emsg_continue("socket");
     }
+    // TIME_WAIT
     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) ==
         -1) {
       emsg_continue("setsockopt(SO_REUSEADDR)");
@@ -606,8 +609,8 @@ static void* thread(void* thdata) {
   return NULL;
 }
 
-void event_main_mt(const char* addrs[], int naddrs, struct event_events events,
-                   void* udata, int nthreads) {
+void event_main(const char* addrs[], int naddrs, struct event_events events,
+                void* udata) {
   // create local event for the purpose of error logging only.
   struct event _event;
   struct event* event = &_event;
@@ -631,25 +634,14 @@ void event_main_mt(const char* addrs[], int naddrs, struct event_events events,
   thctx.udata = udata;
   thctx.paddrs = paddrs;
   thctx.naddrs = naddrs;
-  if (nthreads <= 0) {
-    nthreads = sysconf(_SC_NPROCESSORS_ONLN);
+
+  pthread_t th;
+  int res = pthread_create(&th, NULL, thread, &thctx);
+  if (res) {
+    eprintf(true, "pthread_create: %s", strerror(errno));
   }
-  if (nthreads < 1) {
-    nthreads = 1;
-  }
-  for (long i = 0; i < nthreads; i++) {
-    pthread_t th;
-    int res = pthread_create(&th, NULL, thread, &thctx);
-    if (res) {
-      eprintf(true, "pthread_create: %s", strerror(errno));
-    }
-  }
+
   while (1) {
     sleep(10);
   }
-}
-
-void event_main(const char* addrs[], int naddrs, struct event_events events,
-                void* udata) {
-  event_main_mt(addrs, naddrs, events, udata, 1);
 }

@@ -16,6 +16,15 @@ sudo apt install libxxhash-dev
 gcc *.c -O3 -march=native -lxxhash -o server
 ```
 
+### usage
+
+```bash
+$ ./server 9002
+* Listening at tcp://[::1]:9002
+* Listening at tcp://127.0.0.1:9002
+* Ready to accept connections
+```
+
 ### demo
 
 ```bash

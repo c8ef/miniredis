@@ -58,5 +58,3 @@ const char* event_conn_addr(struct event_conn* conn);
 int64_t event_now();
 void event_main(const char* addrs[], int naddrs, struct event_events events,
                 void* udata);
-void event_main_mt(const char* addrs[], int naddrs, struct event_events events,
-                   void* udata, int nthreads);

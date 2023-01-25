@@ -430,7 +430,12 @@ void command(struct miniredis_conn* conn, struct miniredis_args* args,
   }
 }
 
-int main() {
+int main(int argc, char** argv) {
+  if (argc < 2) {
+    fprintf(stderr, "Usage: %s <port>\n", argv[0]);
+    return EXIT_FAILURE;
+  }
+
   struct server server = {0};
   server.pairs = hashmap_new(sizeof(struct pair*), 0, key_hash, key_compare);
   struct miniredis_events evs = {
@@ -439,8 +444,12 @@ int main() {
       .command = command,
       .error = error,
   };
-  const char* addrs[] = {
-      "tcp://localhost:6381",
-  };
+
+  int port = atoi(argv[1]);
+
+  char addr[64];
+  snprintf(addr, 63, "tcp://localhost:%d", port);
+
+  const char* addrs[] = {addr};
   miniredis_main(addrs, sizeof(addrs) / sizeof(char*), evs, &server);
 }

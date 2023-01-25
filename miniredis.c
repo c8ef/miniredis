@@ -397,9 +397,8 @@ close:
   return;
 }
 
-void miniredis_main_mt(const char** addrs, int naddrs,
-                       struct miniredis_events events, void* udata,
-                       int nthreads) {
+void miniredis_main(const char** addrs, int naddrs,
+                    struct miniredis_events events, void* udata) {
   struct mainctx ctx = {
       .udata = udata,
       .events = &events,
@@ -413,12 +412,7 @@ void miniredis_main_mt(const char** addrs, int naddrs,
       .serving = events.serving ? serving : NULL,
       .error = events.error ? error : NULL,
   };
-  event_main_mt(addrs, naddrs, eevents, &ctx, nthreads);
-}
-
-void miniredis_main(const char** addrs, int naddrs,
-                    struct miniredis_events events, void* udata) {
-  miniredis_main_mt(addrs, naddrs, events, udata, 1);
+  event_main(addrs, naddrs, eevents, &ctx);
 }
 
 static bool writeln(struct buf* buf, char ch, const void* data, ssize_t len) {

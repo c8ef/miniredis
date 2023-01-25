@@ -43,9 +43,6 @@ struct miniredis_events {
 
 void miniredis_main(const char** addrs, int naddrs,
                     struct miniredis_events events, void* udata);
-void miniredis_main_mt(const char** addrs, int naddrs,
-                       struct miniredis_events events, void* udata,
-                       int nthreads);
 
 // general purpose resp message writing
 
