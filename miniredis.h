@@ -8,8 +8,6 @@
 
 struct miniredis_conn;
 
-void* miniredis_conn_udata(struct miniredis_conn* conn);
-void miniredis_conn_set_udata(struct miniredis_conn* conn, void* udata);
 void miniredis_conn_close(struct miniredis_conn* conn);
 const char* miniredis_conn_addr(struct miniredis_conn* conn);
 void miniredis_conn_write_raw(struct miniredis_conn* conn, const void* data,
@@ -32,11 +30,8 @@ bool miniredis_args_eq(struct miniredis_args* args, int index, const char* cmd);
 
 struct miniredis_events {
   int64_t (*tick)(void* udata);
-  bool (*sync)(void* udata);
   void (*command)(struct miniredis_conn* conn, struct miniredis_args* args,
                   void* udata);
-  void (*opened)(struct miniredis_conn* conn, void* udata);
-  void (*closed)(struct miniredis_conn* conn, void* udata);
   void (*serving)(const char** addrs, int naddrs, void* udata);
   void (*error)(const char* message, bool fatal, void* udata);
 };

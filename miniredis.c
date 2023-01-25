@@ -83,35 +83,6 @@ static bool append_arg(struct miniredis_args* args, const char* data,
 
 int64_t miniredis_now() { return event_now(); }
 
-static struct miniredis_conn* miniredis_conn_new(struct event_conn* econn) {
-  struct miniredis_conn* conn = malloc(sizeof(struct miniredis_conn));
-  if (!conn) {
-    return NULL;
-  }
-  memset(conn, 0, sizeof(struct miniredis_conn));
-  conn->econn = econn;
-  return conn;
-}
-
-static void miniredis_conn_free(struct miniredis_conn* conn) {
-  if (!conn) {
-    return;
-  }
-  buf_clear(&conn->packet);
-  buf_clear(&conn->wrbuf);
-  for (int i = 0; i < conn->args.cap; i++) {
-    buf_clear(&conn->args.bufs[i]);
-  }
-  free(conn->args.bufs);
-  free(conn);
-}
-
-void miniredis_conn_set_udata(struct miniredis_conn* conn, void* udata) {
-  conn->udata = udata;
-}
-
-void* miniredis_conn_udata(struct miniredis_conn* conn) { return conn->udata; }
-
 void miniredis_conn_close(struct miniredis_conn* conn) {
   if (conn->closed) return;
   conn->closed = true;
@@ -128,40 +99,6 @@ static int64_t tick(void* udata) {
     return ctx->events->tick(ctx->udata);
   } else {
     return 50e6;  // back off for 50 ms
-  }
-}
-
-static bool sync(void* udata) {
-  struct mainctx* ctx = udata;
-  if (ctx->events->sync) {
-    return ctx->events->sync(ctx->udata);
-  } else {
-    return true;
-  }
-}
-
-static void opened(struct event_conn* econn, void* udata) {
-  struct mainctx* ctx = udata;
-  struct miniredis_conn* conn = miniredis_conn_new(econn);
-  if (!conn) {
-    event_conn_close(econn);
-    return;
-  }
-  event_conn_set_udata(econn, conn);
-  if (ctx->events->opened) {
-    ctx->events->opened(conn, ctx->udata);
-  }
-}
-
-static void closed(struct event_conn* econn, void* udata) {
-  struct mainctx* ctx = udata;
-  struct miniredis_conn* conn = event_conn_udata(econn);
-  if (conn) {
-    conn->closed = true;
-    if (ctx->events->closed) {
-      ctx->events->closed(conn, ctx->udata);
-    }
-    miniredis_conn_free(conn);
   }
 }
 
@@ -405,10 +342,7 @@ void miniredis_main(const char** addrs, int naddrs,
   };
   struct event_events eevents = {
       .tick = events.tick ? tick : NULL,
-      .sync = events.sync ? sync : NULL,
       .data = data,
-      .opened = opened,
-      .closed = closed,
       .serving = events.serving ? serving : NULL,
       .error = events.error ? error : NULL,
   };
